@@ -1,2 +1,2 @@
 # hello-world
-comenzando con Git
+Comenzando con Git, cambiando de rama y realizando commits.
