@@ -4,6 +4,10 @@ from random import random
 import os
 import sys
 
+# Variables globales
+fibo = 1
+apinicial = 0
+
 def apestasApuesta(bankroll,apuesta):
    if (apuesta >= bankroll):
        print ("Eh! apestas a apuesta falsa. No intentes engañarme... abandona!")
@@ -21,38 +25,56 @@ def menu():
 #listaApuestas = []
 #tipoApuesta = False
 
-def ganancias(bankroll,aux2,i):
-    if (bankroll >= aux2):
-        print("Has conseguido tu objetivo de ganar {} Euros".format(aux2))
+# Calcular emolumentos
+'''
+def ganancias(bankroll,target,i):
+    if (bankroll >= target):
+        print("Has conseguido tu objetivo de ganar {} Euros".format(target))
         print("Has ganado {}. Eso es mucho dineriiiiiitooo en {} apuestas".format(bankroll,i-1))
         sys.exit(0)
-
-def perdidas(bankroll,apuesta,i):
-    if (bankroll <= apuesta):
-        print("----- Has perdido todo tu dinero en {} tiradas -------".format(i-1))
-        print("----- Te ha quedado un bankroll de {} aurelios -------".format(bankroll))
+'''
+def ganancias_(*args):
+    #for v in args:
+    print ('cantidad de argumentos', len(args))
+    print("argumentos como lista:", args)
+    if args[0] >= args[1]:
+        print("Has conseguido tu objetivo de ganar {} Euros".format(args[1]))
+        print("Has ganado {}. Eso es mucho dineriiiiiitooo en {} apuestas".format(args[0],args[2]-1))
         sys.exit(0)
-        #return
 
+
+# Calcular perdidas
+def perdidas_(*args):
+    #for v in args:
+    print ('cantidad de argumentos', len(args))
+    print("argumentos como lista:", args)
+    '''if args[0] <= args[1]:
+        print("----- Pichon has perdido todo tu dinero en {} tiradas -------".format(args[2]-1))
+        print("----- Te ha quedado un bankroll de {} aurelios -------".format(args[0]))
+        sys.exit(0)
+    if args[3] <= args[4]:
+        print("----- Pichon has perdido todo tu dinero en {} tiradas -------".format(args[2]-1))
+        print("----- Te ha quedado un bankroll de {} aurelios -------".format(args[0]))
+        sys.exit(0)
+    '''
+    return
 # Fibonnaci
 def F(n):
    return ((1+sqrt(5))**n-(1-sqrt(5))**n)/(2**n*sqrt(5))
 
-# Resta 2 posiciones fibonacci
-def fibomenosdos(n):
-    if n > 2:
-        n -= 2
-        return int(F(n))
-    else:
-        return 1
-
-# Martingala
-def M(n):
-   return n*2
+# Calcular posiciones fibonacci
+def apfibo(n):
+    global fibo
+    if (n <= 1):
+        ap = apinicial # 0 y 1
+        fibo = 1
+    else:       
+        ap = apinicial + int(F(n-2)) 
+    return ap, fibo
 
 while True:
     # Mostramos menu
-    #menu()
+    menu()
 
     # solicituamos una opción al usuario
     bankroll = int(input ("Indica tu presupuesto: "))
@@ -67,124 +89,120 @@ while True:
     sec = input("Elige: \n 1 para Fibonacci \n 2 para Martingala \n 3 ambas >> ")
 
     if sec == "1":
-        print ("")
         # implementamos fibonacci
         def fib(bankroll, apuesta, beneficio):
+            global fibo
             i = 1
             win = 0
-            fibo = 1
-            aux2 = bankroll + beneficio
-            print("tirada\tApuesta\tFibonacci\tGana/Pierde\t\tResultado\tBankroll")
+            target = bankroll + beneficio
+            print("Tirada\tFibo\tApuesta\tGana/Pierde\t\tResultado\tBankroll")
             while apuesta < bankroll:
-                ganancias(bankroll,aux2,i)
+                ganancias_(bankroll,target,i)
                 aleatorio=random()
                 if aleatorio<0.45: # Rojo y par ganan
-                    if (fibo == 0 or fibo == 1):
-                        apuesta = apinicial # 0
-                    elif (fibo == 2):
-                        apuesta = apinicial + 1 # 1,1
-                    elif (fibo == 3): 
-                        apuesta = apinicial + 2 # 2
-                    else:
-                        apuesta = apinicial + int(F(fibo-2))
-                        fibo -= 2
+                    apuesta, fibo = apfibo(fibo)
                     win=int(apuesta)
                     bankroll = bankroll + win
-                    print("{}\t{}\t{}\t\tGANA\t\t{}\t{}\t\t{}".format(i,apuesta,fibo,win,str(aleatorio)[0:4],bankroll))
+                    print("{}\t{}\t{}\tGANA\t\t{}\t{}\t\t{}".format(i,fibo,apuesta,str(aleatorio)[0:4],win,bankroll))
+                    fibo -= 2
                 elif aleatorio<0.90: # Negro impar pierden
-                    if fibo == 1:
-                        apuesta = apinicial
-                    else:
-                        apuesta = int(F(fibo)) + apinicial
+                    apuesta, fibo = apfibo(fibo)
                     loose=int(apuesta)
                     bankroll = bankroll - loose 
-                    print("{}\t{}\t{}\t\tPIERDE\t\t{}\t{}\t\t{}".format(i,apuesta,fibo,loose,str(aleatorio)[0:4],bankroll))
+                    print("{}\t{}\t{}\tPIERDE\t\t{}\t{}\t\t{}".format(i,fibo,apuesta,str(aleatorio)[0:4],loose,bankroll))
                     fibo +=1
                 else: # Verde 0 pierde
-                    if fibo == 1:
-                        apuesta = apinicial
-                    else:
-                        apuesta = int(F(fibo)) + apinicial
+                    apuesta, fibo = apfibo(fibo)
                     loose=int(apuesta)
                     bankroll = bankroll - loose
-                    print("{}\t{}\t{}\t\tPIERDE - 0\t{}\t{}\t\t{}".format(i,apuesta,fibo,loose,str(aleatorio)[0:5],bankroll))
+                    print("{}\t{}\t{}\tPIERDE - 0\t{}\t{}\t\t{}".format(i,fibo,apuesta,str(aleatorio)[0:5],loose,bankroll))
                     fibo += 1                
                 
                 i += 1
-                perdidas(bankroll,apuesta,i)
+                perdidas_(bankroll, apuesta, i-1)
         fib(bankroll, apuesta, beneficio)
     elif sec == "2":
-        print("")
         # implementamos martingala
         def mart(bankroll, apuesta, beneficio):
             i = 1
             win = 0
-            aux = 1
-            aux2 = bankroll + beneficio
-            print("tirada\tApuesta\tResultado Aleatorio\tGana/Pierde\t\tBankroll\tMartingala")
+            target = bankroll + beneficio
+            print("tirada\tMartin\tApuesta\tGana/Pierde\t\tResultado\tBankroll")
             while apuesta < bankroll:
-                ganancias(bankroll,aux2,i)
+                ganancias_(bankroll,target,i)
                 aleatorio=random()
                 if aleatorio<0.45: # Rojo y par ganan
                     win=int(apuesta)
                     bankroll = bankroll + win
-                    print("{}\t{}\t\t{}\t\tGANA\t\t{}\t{}\t\t{}".format(i,apuesta,str(aleatorio)[0:4],win,bankroll,aux))
-                    apuesta = 1
+                    apuesta, martin = 1,1
+                    print("{}\t{}\t\t{}\t\tGANA\t\t{}\t{}\t\t{}".format(i,martin,apuesta,str(aleatorio)[0:4],win,bankroll))
                 elif aleatorio<0.90: # Negro impar pierden
                     loose=int(apuesta)
                     bankroll = bankroll - loose 
-                    print("{}\t{}\t\t{}\t\tPIERDE\t\t{}\t{}\t\t{}".format(i,apuesta,str(aleatorio)[0:4],loose,bankroll,aux))
                     apuesta *= 2
+                    martin *= 2
+                    print("{}\t{}\t\t{}\t\tPIERDE\t\t{}\t{}\t\t{}".format(i,martin,apuesta,str(aleatorio)[0:4],loose,bankroll))
                 else: # Verde 0 pierde
                     loose=int(apuesta)
                     bankroll = bankroll - loose
-                    print("{}\t{}\t\t{}\t\tPIERDE - 0\t{}\t{}\t\t{}".format(i,apuesta,str(aleatorio)[0:5],loose,bankroll,aux))
-                    apuesta *= 2                    
+                    apuesta *= 2
+                    martin *= 2
+                    print("{}\t{}\t\t{}\t\tPIERDE - 0\t{}\t{}\t\t{}".format(i,martin,apuesta,str(aleatorio)[0:5],loose,bankroll))                    
                 
                 i += 1
-                perdidas(bankroll,apuesta,i)
+                perdidas_(bankroll,apuesta,i)
 
         mart(bankroll, apuesta, beneficio)
     elif sec == "3":
         print("")
         # implementamos fibonacci
-        def fib_(bankroll, apuesta, beneficio):
+        def martfib(bankroll, apuesta, beneficio):
+            global fibo
             i = 1
-            win = 0
-            fibo = 1
-            total = bankroll + beneficio
-            print("tirada\tApuesta\tResultado Aleatorio\tGana/Pierde\t\tBankroll\tFibonacci")
+            martwin, fibowin = 0,0
+            martloose, fiboloose = 0,0
+            martap = apuesta
+            mart = 1
+            martbank = bankroll
+            fibobank = bankroll
+            target = bankroll + beneficio
+            print("tirada\tMartin\tFibo\tMarAp\tFibAp\tGana/Pierde\tMartinRes\tFiboRes\tMartinBank\tFiboBank")
             while apuesta < bankroll:
-                ganancias(bankroll,total,i)
+                ganancias_(bankroll,target,i)
                 aleatorio=random()
                 if aleatorio<0.45: # Rojo y par ganan
-                    win=int(apuesta)
-                    bankroll = bankroll + win
-                    apuesta = int(F(fibo - 2))
-                    if apuesta <= 0:
-                        apuesta = 1
-                    #print("{}\t{}\t\t{}\t\tGANA\t\t{}\t{}\t\t{}".format(i,apuesta,str(aleatorio)[0:4],win,bankroll,aux))
-                    return apuesta,win,bankroll,fibo
+                    martap, mart = 1,1
+                    fiboap, fibo = apfibo(fibo)
+                    martwin = int(martap)
+                    fibowin = int(fiboap)
+                    martbank = martbank + martwin
+                    fibobank = fibobank + fibowin
+                    print("{}\t{}\t{}\t{}\t{}\tGANA {}\t{}\t\t{}\t{}\t\t{}".format(i,mart,fibo,martap,fiboap,str(aleatorio)[0:4],martwin,fibowin,martbank,fibobank))
+                    fibo -= 2
+                    #return apuesta,win,bankroll,fibo
                 elif aleatorio<0.90: # Negro impar pierden
+                    fiboap, fibo = apfibo(fibo)
+                    martloose = int(martap)
+                    fiboloose = int(fiboap)
+                    martbank = martbank - martloose
+                    fibobank = fibobank - fiboloose
+                    print("{}\t{}\t{}\t{}\t{}\tPIERDE {}\t{}\t\t{}\t{}\t\t{}".format(i,mart,fibo,martap,fiboap,str(aleatorio)[0:4],martwin,fibowin,martbank,fibobank))
                     fibo +=1
-                    loose=int(apuesta)
-                    bankroll = bankroll - loose 
-                    apuesta = int(F(fibo))
-                    #print("fibonacci {}".format(aux))
-                    #print("{}\t{}\t\t{}\t\tPIERDE\t\t{}\t{}\t\t{}".format(i,apuesta,str(aleatorio)[0:4],loose,bankroll,aux))
-                    return apuesta, loose, bankroll, fibo
+                    mart *= 2
+                    martap *= 2
                 else: # Verde 0 pierde
-                    fibo += 1
-                    loose=int(apuesta)
-                    bankroll = bankroll - loose
-                    apuesta = int(F(fibo))  
-                    #print("{}\t{}\t\t{}\t\tCero - PIERDE\t{}\t{}\t\t{}".format(i,apuesta,str(aleatorio)[0:5],loose,bankroll,aux))
-                    return apuesta, loose, bankroll, fibo                   
+                    fiboap, fibo = apfibo(fibo)
+                    martloose = int(martap)
+                    fiboloose = int(fiboap)
+                    martbank = martbank - martloose
+                    fibobank = fibobank - fiboloose
+                    print("{}\t{}\t{}\t{}\t{}\tPIERDE {}\t{}\t\t{}\t{}\t\t{}".format(i,mart,fibo,martap,fiboap,str(aleatorio)[0:4],martwin,fibowin,martbank,fibobank))
+                    fibo +=1
+                    mart *= 2
+                    martap *= 2                 
                 
                 i += 1
-                perdidas(bankroll,apuesta,i)
-            return i
-
-        #print(fib_(bankroll, apuesta, beneficio))
+                perdidas_(martbank,martap,i,fibobank,fiboap)
+        martfib(bankroll, apuesta, beneficio)
     else:
         break
